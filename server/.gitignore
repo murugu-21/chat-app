@@ -1,0 +1,6 @@
+# files go here
+.env
+
+# folders go here
+node_modules
+build

@@ -1,0 +1,39 @@
+{
+  "name": "chat-app-server",
+  "version": "0.0.1",
+  "description": "chat app server",
+  "main": "build/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "npm run test",
+    "prod": "node --env-file=.env build/src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/murugu-21/chat-app.git"
+  },
+  "keywords": [
+    "chat-app"
+  ],
+  "author": "Murugappan",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/murugu-21/chat-app/issues"
+  },
+  "homepage": "https://github.com/murugu-21/chat-app#readme",
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.7",
+    "prettier": "3.4.2",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@sentry/node": "^8.50.0",
+    "@t3-oss/env-core": "^0.11.1",
+    "express": "^4.21.2",
+    "express-winston": "^4.2.0",
+    "winston": "^3.17.0",
+    "zod": "^3.24.1"
+  }
+}
