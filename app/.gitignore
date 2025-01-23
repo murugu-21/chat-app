@@ -4,4 +4,4 @@
 
 # folders go here
 node_modules
-build
+dist
