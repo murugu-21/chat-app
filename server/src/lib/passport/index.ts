@@ -97,6 +97,7 @@ const authJwtMW: RequestHandler = (
                     }),
                 );
             } else {
+                req.user = user as any;
                 return next();
             }
         },

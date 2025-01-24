@@ -14,6 +14,8 @@ import { requestLoggerMW } from './middleware/requestLogger.middleware.js';
 import healthCheckRouter from './features/healthcheck/healthcheck.route.js';
 import userRouter from './features/user/user.route.js';
 import authRouter from './features/auth/auth.route.js';
+import chatRouter from './features/chat/chat.route.js';
+import messageRouter from './features/message/message.route.js';
 
 import globalErrorHandler from './errorHandler/globalErrorHandler.js';
 import zodErrorHandler from './errorHandler/zodErrorHandler.js';
@@ -69,6 +71,10 @@ app.use('/health', healthCheckRouter);
 app.use('/user', userRouter);
 
 app.use('/auth', authRouter);
+
+app.use('/chat', chatRouter);
+
+app.use('/message', messageRouter);
 
 app.use(zodErrorHandler);
 

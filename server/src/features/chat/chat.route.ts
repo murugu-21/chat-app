@@ -19,4 +19,10 @@ router.post(
     chatController.createChat,
 );
 
+router.get(
+    '/list',
+    authJwtMW,
+    chatController.listChatsOfUser,
+);
+
 export default router;

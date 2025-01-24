@@ -7,7 +7,7 @@
     "scripts": {
         "build": "tsc",
         "test": "npm run test",
-        "prod": "node --env-file=.env build/src/index.js"
+        "prod": "node --env-file=.env build/index.js"
     },
     "repository": {
         "type": "git",

@@ -9,7 +9,7 @@ const addMessage = async (data: MessageDataT): Promise<MessageT> => {
 const listMessagesOfChat = async (chatId: string) => {
     const messages = await messageModel
         .find({ chatId })
-        .populate<{ userId: Pick<UserT, 'email'> }>('userId', 'email');
+        .populate<{ userId: Pick<UserT, 'email'> }>('createdBy', 'email');
     return messages;
 };
 

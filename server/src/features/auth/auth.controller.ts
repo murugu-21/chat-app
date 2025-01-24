@@ -14,7 +14,7 @@ const changePassword: RequestHandler = catchAsync(
 const login: RequestHandler = catchAsync(
     async (req: Request, res: Response) => {
         const { user } = req;
-        const token = authService.login(user!!._id);
+        const token = authService.login(user!!._id.toString());
         res.status(StatusCodes.CREATED).json({ token });
     },
 );

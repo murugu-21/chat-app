@@ -5,15 +5,15 @@ import * as messageDb from './message.repository.js';
 const sendMessage = async ({
     user,
     chatId,
-    message,
+    content,
 }: {
     user: UserT;
     chatId: string;
-    message: string;
+    content: string;
 }): Promise<MessageT> => {
     const messageDoc = await messageDb.addMessage({
         chatId,
-        content: message,
+        content,
         createdBy: user._id,
     });
     return messageDoc;

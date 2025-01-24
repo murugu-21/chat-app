@@ -29,6 +29,11 @@ const createChat = async ({
     return chat1.chatId;
 };
 
+const listChatsOfUser = async (userId: string): Promise<Array<ChatT>> => {
+    const chats = await chatDb.listChatsOfUser(userId);
+    return chats;
+};
+
 const getChatForUser = async ({
     userId,
     chatId,
@@ -47,4 +52,4 @@ const getChatForUser = async ({
     return chat;
 };
 
-export { createChat, getChatForUser };
+export { createChat, listChatsOfUser, getChatForUser };

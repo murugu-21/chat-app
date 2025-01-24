@@ -16,4 +16,12 @@ const createChat: RequestHandler = catchAsync(
     },
 );
 
-export { createChat };
+const listChatsOfUser: RequestHandler = catchAsync(
+    async (req: Request, res: Response) => {
+        const { user } = req;
+        const chats = await chatService.listChatsOfUser(user._id.toString());
+        res.status(StatusCodes.OK).json(chats);
+    },
+);
+
+export { createChat, listChatsOfUser };

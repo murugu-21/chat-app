@@ -6,11 +6,11 @@ import { StatusCodes } from 'http-status-codes';
 
 const sendMessage = catchAsync(async (req: Request, res: Response) => {
     const { chat, user } = req;
-    const { message } = req.body;
+    const { content } = req.body;
     const messageDoc = await messageService.sendMessage({
         user,
         chatId: chat.chatId,
-        message,
+        content,
     });
     res.status(StatusCodes.CREATED).json(messageDoc);
 });
