@@ -1,7 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import useSWR from 'swr';
+import fetcher from '../utils/fetcher';
+import FullPageLoader from './utils/FullPageLoader';
+import SiteDown from './utils/SiteDown';
+import { useNavigate } from 'react-router';
+import Button from '../components/Button';
 
 const searchSchema = z.object({
     query: z.string().min(3),
@@ -10,9 +16,14 @@ const searchSchema = z.object({
 type SearchSchemaT = z.infer<typeof searchSchema>;
 
 export default function Home(): JSX.Element {
-    const [chats, setChats] = useState<
-        Array<{ chatId: string; chatName: string }>
-    >([]);
+    const {
+        data: chats,
+        isLoading,
+        error,
+    } = useSWR<Array<{ chatId: string; chatName: string }>>(
+        'chat/list',
+        fetcher,
+    );
     const {
         register,
         handleSubmit,
@@ -21,44 +32,48 @@ export default function Home(): JSX.Element {
     const [users, setUsers] = useState<Array<{ _id: string; email: string }>>(
         [],
     );
-    useEffect(() => {
-        const fetchChats = async () => {
-            const res = await fetch(
-                `${import.meta.env.VITE_BACKEND_URL}/chat/list`,
-                {
-                    method: 'GET',
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem(
-                            'token',
-                        )}`,
-                        Accept: 'application/json',
-                    },
-                },
-            );
-            if (res.ok) {
-                const apiResponse = await res.json();
-                setChats(apiResponse.response);
-            }
-        };
-        fetchChats();
-    }, []);
+    const navigate = useNavigate();
+
     const onSubmit = handleSubmit(async (data) => {
-        const res = await fetch(
-            `${import.meta.env.VITE_BACKEND_URL}/user/search`,
+        const newUsers = await fetcher<Array<{ _id: string; email: string }>>(
+            'user/search',
             {
                 method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': 'application/json',
-                },
             },
         );
-        if (res.ok) {
-            const apiResponse = await res.json();
-            setUsers(apiResponse.response);
-        }
+        setUsers(newUsers);
     });
+
+    const handleChat = async (
+        chats: Array<{ chatId: string; chatName: string }>,
+        user: {email: string},
+    ) => {
+        const chat = chats.find((chat) => chat.chatName === user.email);
+        let chatId = chat?.chatId;
+        if (!chatId) {
+            chatId = await fetcher('chat/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: user.email,
+                }),
+            });
+        }
+        navigate(`chat/${chatId}`);
+    };
+
+    if (isLoading) {
+        return <FullPageLoader />;
+    }
+
+    if (error || !chats) {
+        return <SiteDown />;
+    }
+
     return (
         <div className="p-16 flex flex-col gap-4 justify-center items-start">
             <div className="flex justify-end">
@@ -74,56 +89,27 @@ export default function Home(): JSX.Element {
                             {errors.query.message}
                         </p>
                     )}
-                    <button
+                    <Button
                         className="bg-blue-500 hover:bg-blue-700 disabled:bg-blue-100 disabled:cursor-not-allowed cursor-pointer text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                         type="submit"
+                        onClick={onSubmit}
                     >
-                        search
-                    </button>
+                        <span>search</span>
+                    </Button>
                 </form>
             </div>
             {users.length > 0 ? (
                 <div className="flex flex-col gap-2 justify-center items-center">
                     {users.map((user) => (
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col gap-1" key={user._id}>
                             <span>{user.email}</span>
-                            <button
+                            <Button
                                 className="bg-blue-500 hover:bg-blue-700 disabled:bg-blue-100 disabled:cursor-not-allowed cursor-pointer text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                                onClick={async () => {
-                                    const chat = chats.find(
-                                        (chat) => chat.chatName === user.email,
-                                    );
-                                    if (chat) {
-                                        window.location.href = `${window.location.origin}/chat/${chat.chatId}`;
-                                    } else {
-                                        const res = await fetch(
-                                            `${
-                                                import.meta.env.VITE_BACKEND_URL
-                                            }/chat/create`,
-                                            {
-                                                method: 'POST',
-                                                headers: {
-                                                    Authorization: `Bearer ${localStorage.getItem(
-                                                        'token',
-                                                    )}`,
-                                                    'Content-Type':
-                                                        'application/json',
-                                                },
-                                                body: JSON.stringify({
-                                                    email: user.email,
-                                                }),
-                                            },
-                                        );
-                                        if (res.ok) {
-                                            const apiResponse =
-                                                await res.json();
-                                            window.location.href = `${window.location.origin}/chat/${apiResponse.response}`;
-                                        }
-                                    }
-                                }}
+                                type="submit"
+                                onClick={() => handleChat(chats, user)}
                             >
-                                chat
-                            </button>
+                                <span>chat</span>
+                            </Button>
                         </div>
                     ))}
                 </div>
@@ -133,9 +119,7 @@ export default function Home(): JSX.Element {
                         <div>
                             <div
                                 className="cursor-pointer"
-                                onClick={() =>
-                                    (window.location.href = `${window.location.origin}/chat/${chat.chatId}`)
-                                }
+                                onClick={() => navigate(`chat/${chat.chatId}`)}
                             >
                                 {chat.chatName}
                             </div>

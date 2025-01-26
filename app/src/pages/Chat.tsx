@@ -1,8 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useParams } from 'react-router';
+import useSWR from 'swr';
 import { z } from 'zod';
+
+import fetcher from '../utils/fetcher';
+import FullPageLoader from './utils/FullPageLoader';
+import SiteDown from './utils/SiteDown';
+import { useSocket } from '../hooks/useSocket';
+import { useEffect } from 'react';
 
 const createMessageSchema = z.object({
     content: z.string().min(1),
@@ -11,10 +17,16 @@ const createMessageSchema = z.object({
 type createMessageSchemaT = z.infer<typeof createMessageSchema>;
 
 export default function Chat(): JSX.Element {
+    const { socket } = useSocket();
     const { chatId } = useParams();
-    const [messages, setMessages] = useState<
+    const {
+        data: messages,
+        isLoading,
+        error,
+        mutate
+    } = useSWR<
         Array<{ _id: string; content: string; createdBy: { email: string } }>
-    >([]);
+    >(chatId ? `message/list/${chatId}` : null, fetcher);
     const {
         register,
         handleSubmit,
@@ -23,43 +35,39 @@ export default function Chat(): JSX.Element {
     } = useForm<createMessageSchemaT>({
         resolver: zodResolver(createMessageSchema),
     });
-    const fetchMessages = async (chatId: string) => {
-        const res = await fetch(
-            `${import.meta.env.VITE_BACKEND_URL}/message/list/${chatId}`,
-            {
-                method: 'GET',
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
-            },
-        );
-        if (res.ok) {
-            const apiResponse = await res.json();
-            setMessages(apiResponse.response);
-        }
-    };
     const onSubmit = handleSubmit(async (data) => {
-        const res = await fetch(
-            `${import.meta.env.VITE_BACKEND_URL}/message/send`,
-            {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    'Content-type': 'application/json',
-                },
-                body: JSON.stringify({ chatId, content: data.content }),
+        await fetcher(`message/send`, {
+            method: 'POST',
+            headers: {
+                'Content-type': 'application/json',
             },
-        );
-        if (res.ok && chatId) {
+            body: JSON.stringify({ chatId, content: data.content }),
+        });
+        if (chatId) {
             reset();
-            await fetchMessages(chatId);
+            // await mutate();
         }
     });
     useEffect(() => {
-        if (chatId) {
-            fetchMessages(chatId);
-        }
+        socket.emit('join', chatId);
+        socket.on('message', (msg: string) => {
+            window.console.log("message from server", msg);
+            mutate();
+        });
+        return () => {
+            socket.emit('leave', chatId);
+            socket.off('message');
+        };
     }, [chatId]);
+
+    if (isLoading) {
+        return <FullPageLoader />
+    }
+
+    if (error || !messages) {
+        return <SiteDown />
+    }
+    
     if (!chatId) {
         return <div>Chat not found</div>;
     }

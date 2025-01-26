@@ -21,11 +21,14 @@ const createChat = async ({
         chatId: nanoid(),
         chatName: toUser.email,
     });
-    await chatDb.createChat({
-        userId: toUser._id,
-        chatId: chat1.chatId,
-        chatName: fromUser.email,
-    });
+    // create another chat only if emails are different
+    if (toUserEmail !== fromUser.email) {
+        await chatDb.createChat({
+            userId: toUser._id,
+            chatId: chat1.chatId,
+            chatName: fromUser.email,
+        });
+    }
     return chat1.chatId;
 };
 
