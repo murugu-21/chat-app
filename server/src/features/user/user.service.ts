@@ -83,4 +83,12 @@ const searchUsers = async (
     return users;
 };
 
-export { createUser, changePassword, getUserByEmail, getUserById, searchUsers };
+const getOrCreateUserByEmail = async ({
+    email,
+}: {
+    email: string;
+}): Promise<UserT> => {
+    return userDb.getOrCreateUserByEmail({ email });
+};
+
+export { createUser, changePassword, getUserByEmail, getUserById, searchUsers, getOrCreateUserByEmail };

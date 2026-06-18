@@ -48,4 +48,17 @@ const searchUsers = async (
     return users;
 };
 
-export { createUser, changePassword, getUserByEmail, getUserById, searchUsers };
+const getOrCreateUserByEmail = async ({
+    email,
+}: {
+    email: string;
+}): Promise<UserT> => {
+    const user = await userModel.findOneAndUpdate(
+        { email },
+        { $setOnInsert: { email } },
+        { upsert: true, new: true, setDefaultsOnInsert: true },
+    ).lean();
+    return user as UserT;
+};
+
+export { createUser, changePassword, getUserByEmail, getUserById, searchUsers, getOrCreateUserByEmail };
