@@ -3,14 +3,6 @@ import catchAsync from '../../utils/wrapAsync.js';
 import * as userService from './user.service.js';
 import { StatusCodes } from 'http-status-codes';
 
-const createUser: RequestHandler = catchAsync(
-    async (req: Request, res: Response) => {
-        const { email } = req.body;
-        const user = await userService.createUser({ email });
-        res.status(StatusCodes.CREATED).json(user);
-    },
-);
-
 const getUser: RequestHandler = catchAsync(
     async (req: Request, res: Response) => {
         const { user } = req;
@@ -26,4 +18,4 @@ const searchUsers: RequestHandler = catchAsync(
     },
 );
 
-export { createUser, getUser, searchUsers };
+export { getUser, searchUsers };

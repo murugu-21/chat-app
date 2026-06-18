@@ -4,7 +4,7 @@ import {
     listMessagesOfChatValidator,
     sendMessageValidator,
 } from './message.validator.js';
-import { authJwtMW } from '../../lib/passport/index.js';
+import { requireAuth } from '../../middleware/auth.middleware.js';
 import * as messageController from './message.controller.js';
 import { loadChatForUser } from './message.middleware.js';
 
@@ -22,7 +22,7 @@ const router = Router();
 
 router.post(
     '/send',
-    authJwtMW,
+    requireAuth,
     sendMessageValidatorMW,
     loadChatForUser,
     messageController.sendMessage,
@@ -30,7 +30,7 @@ router.post(
 
 router.get(
     '/list/:chatId',
-    authJwtMW,
+    requireAuth,
     listMessagesOfChatValidatorMW,
     loadChatForUser,
     messageController.listMessagesOfChat,
