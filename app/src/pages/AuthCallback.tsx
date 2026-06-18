@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type JSX} from 'react';
 import { useNavigate } from 'react-router';
 import { exchangeCode } from '../lib/pkce';
-import { cognitoConfig, storeTokens, emailFromIdToken } from '../lib/auth';
+import { cognitoConfig, storeTokens, emailFromIdToken, pictureFromIdToken } from '../lib/auth';
 
 export default function AuthCallback(): JSX.Element {
     const navigate = useNavigate();
@@ -26,7 +26,7 @@ export default function AuthCallback(): JSX.Element {
             }
             try {
                 const tokens = await exchangeCode(cognitoConfig(), code, verifier);
-                storeTokens(tokens.id_token, tokens.refresh_token, emailFromIdToken(tokens.id_token));
+                storeTokens(tokens.id_token, tokens.refresh_token, emailFromIdToken(tokens.id_token), pictureFromIdToken(tokens.id_token));
                 navigate('/', { replace: true });
             } catch {
                 setError('Sign-in failed. Please try again.');
