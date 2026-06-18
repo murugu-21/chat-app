@@ -5,11 +5,8 @@ const baseEnv = {
     ADMIN_API_KEY: '00000000-0000-0000-0000-000000000000',
     PORT: '3000',
     DATABASE_URL: 'mongodb://localhost:27017',
-    AWS_REGION: 'ap-south-1',
     CLIENT_URL: 'http://localhost:5173',
     SENTRY_DSN: 'https://abc@o0.ingest.sentry.io/0',
-    NOTIFICATIONS_EMAIL: 'no-reply@example.com',
-    JWT_SECRET: '00000000-0000-0000-0000-000000000000',
 };
 
 afterEach(() => {
