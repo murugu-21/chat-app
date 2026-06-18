@@ -948,6 +948,7 @@ git commit -m "feat: protect routes with requireAuth; remove login/create routes
 - Delete: `server/src/lib/passport/`, `server/src/lib/bcrypt/`, `server/src/lib/ses/`
 - Modify: `server/src/features/user/user.service.ts` (remove `createUser`, `changePassword`, `getUserById` + their imports)
 - Modify: `server/src/features/user/user.repository.ts` (remove `createUser`, `changePassword`, `getUserById`)
+- Modify: `server/src/features/user/user.model.ts` (remove the optional `password` field re-added in Task 4, and the temporary `?? ''` shim disappears with `lib/passport`)
 - Modify: `server/src/config/env.ts` (remove `AWS_REGION`, `NOTIFICATIONS_EMAIL`, `JWT_SECRET`)
 - Modify: `server/src/constants.ts` (CORS origins)
 - Modify: `server/src/__tests__/setup.ts` (drop the now-removed env vars)
@@ -968,6 +969,8 @@ export { getUserByEmail, searchUsers, getOrCreateUserByEmail };
 ```ts
 export { getUserByEmail, searchUsers, getOrCreateUserByEmail };
 ```
+
+- [ ] **Step 2c: Remove the optional `password` field from `user.model.ts`** (it was re-added as optional in Task 4 to keep the build green). Delete the `password: { type: String, required: false }` block so the schema has only `email`. The temporary `hash: user.password ?? ''` shim in `lib/passport` needs no separate cleanup — that whole directory is deleted in the next step.
 
 - [ ] **Step 3: Delete dead directories/files**
 
