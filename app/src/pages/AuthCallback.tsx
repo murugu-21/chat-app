@@ -35,7 +35,7 @@ export default function AuthCallback(): JSX.Element {
     }, [navigate]);
 
     return (
-        <div className="text-gray-600 text-sm">
+        <div className="flex min-h-screen items-center justify-center text-muted-foreground text-sm">
             {error ? (
                 <>
                     <p>{error}</p>

@@ -1,5 +1,7 @@
-import { generateVerifier, challengeFor, authorizeUrl } from '../lib/pkce';
-import { cognitoConfig } from '../lib/auth';
+import { generateVerifier, challengeFor, authorizeUrl } from '@/lib/pkce';
+import { cognitoConfig } from '@/lib/auth';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function LoginPage(): JSX.Element {
     const signIn = async () => {
@@ -10,21 +12,17 @@ export default function LoginPage(): JSX.Element {
         sessionStorage.setItem('chat.oauthState', state);
         window.location.href = authorizeUrl(cognitoConfig(), challenge, state);
     };
-
     return (
-        <div className="w-full max-w-xs">
-            <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 flex flex-col items-center gap-4">
-                <h1 className="text-gray-700 font-bold">Chat app</h1>
-                <button
-                    onClick={signIn}
-                    className="bg-blue-500 hover:bg-blue-700 cursor-pointer text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                >
-                    Sign in with Google
-                </button>
-            </div>
-            <p className="text-center text-gray-500 text-xs">
-                &copy;2025 Chat app. All rights reserved.
-            </p>
+        <div className="flex min-h-screen items-center justify-center bg-background p-4">
+            <Card className="w-full max-w-sm">
+                <CardHeader className="text-center">
+                    <CardTitle className="text-2xl">Chat app</CardTitle>
+                    <CardDescription>Sign in to continue</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button className="w-full" onClick={signIn}>Continue with Google</Button>
+                </CardContent>
+            </Card>
         </div>
     );
 }
