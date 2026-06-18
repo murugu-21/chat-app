@@ -19,6 +19,7 @@ export function Sidebar() {
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon">
                                 <Avatar className="h-7 w-7"><AvatarFallback>{email.slice(0, 2).toUpperCase()}</AvatarFallback></Avatar>
+                                <span className="sr-only">Account menu</span>
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">

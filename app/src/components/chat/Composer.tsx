@@ -20,7 +20,7 @@ export function Composer({ onSend }: { onSend: (content: string) => Promise<void
                 className="min-h-10 max-h-40 resize-none"
                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } }}
             />
-            <Button type="submit" size="icon" disabled={isSubmitting}><SendHorizontal className="h-4 w-4" /></Button>
+            <Button type="submit" size="icon" disabled={isSubmitting}><SendHorizontal className="h-4 w-4" /><span className="sr-only">Send</span></Button>
         </form>
     );
 }

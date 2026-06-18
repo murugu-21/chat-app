@@ -39,7 +39,7 @@ export default function ApiHealthGate({ children }: { children: ReactNode }): JS
 
     if (ready) return <>{children}</>;
     return (
-        <div className="flex items-center justify-center min-h-screen text-gray-600">
+        <div className="flex items-center justify-center min-h-screen text-muted-foreground">
             {waking ? 'Waking the server… this can take a moment.' : 'Connecting…'}
         </div>
     );

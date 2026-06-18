@@ -37,10 +37,10 @@ export default function AuthCallback(): JSX.Element {
     return (
         <div className="flex min-h-screen items-center justify-center text-muted-foreground text-sm">
             {error ? (
-                <>
+                <div className="flex flex-col items-center gap-2">
                     <p>{error}</p>
-                    <a className="text-blue-500" href="/login">Back to sign in</a>
-                </>
+                    <a className="text-primary underline" href="/login">Back to sign in</a>
+                </div>
             ) : (
                 <p>Signing you in…</p>
             )}
