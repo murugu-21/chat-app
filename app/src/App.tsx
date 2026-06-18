@@ -1,6 +1,7 @@
 import './App.css';
 import { BrowserRouter, Route, Routes } from 'react-router';
 import LoginPage from './pages/Login';
+import AuthCallback from './pages/AuthCallback';
 import Home from './pages/Home';
 import Chat from './pages/Chat';
 import { Toaster } from 'sonner';
@@ -19,6 +20,7 @@ function App() {
                     {online ? (
                         <>
                             <Route path="/login" element={<LoginPage />} />
+                            <Route path="/auth/callback" element={<AuthCallback />} />
                             <Route element={<ProtectedRoute />}>
                                 <Route index element={<Home />} />
                                 <Route
