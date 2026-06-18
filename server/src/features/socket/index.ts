@@ -5,6 +5,7 @@ import * as chatService from '../chat/chat.service.js';
 import { makeSocketAuth } from './auth.js';
 import { verifyToken } from '../../lib/auth/index.js';
 import * as userService from '../user/user.service.js';
+import { addConnection, removeConnection, onlineEmails } from '../presence/presence.js';
 
 const io = new Server({
     cors: { origin: corsList, methods: ['GET', 'POST'] },
@@ -18,10 +19,18 @@ io.use(
 );
 
 io.on('connection', (socket) => {
-    const userId = (socket.request as any).user?.email;
-    console.log(`${userId} user connected`);
+    const email = (socket.request as any).user?.email as string | undefined;
+    if (email) {
+        const wentOnline = addConnection(email);
+        socket.emit('presence:state', onlineEmails());
+        if (wentOnline) socket.broadcast.emit('presence:update', { email, online: true });
+    }
 
-    socket.on('disconnect', () => console.log(`${userId} user disconnected`));
+    socket.on('disconnect', () => {
+        if (email && removeConnection(email)) {
+            io.emit('presence:update', { email, online: false });
+        }
+    });
 
     socket.on('join', async (chatId, callback) => {
         try {
