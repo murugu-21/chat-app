@@ -6,7 +6,7 @@ import { getToken } from '../lib/auth';
 export function useSocket() {
     const socket = io(BACKEND_URL, {
         autoConnect: false,
-        auth: { token: getToken() },
+        auth: (cb) => cb({ token: getToken() }),
     });
     useEffect(() => {
         socket.connect();
