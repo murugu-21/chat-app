@@ -1,35 +1,42 @@
 import { StatusCodes } from 'http-status-codes';
 import { BACKEND_URL } from '../env';
+import { getToken, getRefreshToken, storeTokens, clearTokens, cognitoConfig, emailFromIdToken } from '../lib/auth';
+import { refreshTokens } from '../lib/pkce';
 
-const fetcher = async <T>(
-    relativeUrl: string,
-    config: RequestInit = {}
-): Promise<T> => {
-    // uncomment to verify loaders
-    // await new Promise((resolve) => setTimeout(() => resolve(""), 5 * 1000))
-    
-    // uncomment to verify error handling
-    // if(config.method === 'POST')
-    // throw new Error("custom error")
-    const res = await fetch(
-        `${BACKEND_URL}/${relativeUrl}`,
-        {
+async function tryRefresh(): Promise<boolean> {
+    const rt = getRefreshToken();
+    if (!rt) return false;
+    try {
+        const t = await refreshTokens(cognitoConfig(), rt);
+        // Cognito refresh returns a new id_token (and access), but NOT a new refresh token — keep the old one.
+        storeTokens(t.id_token, rt, emailFromIdToken(t.id_token));
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+const fetcher = async <T>(relativeUrl: string, config: RequestInit = {}): Promise<T> => {
+    const doFetch = () =>
+        fetch(`${BACKEND_URL}/${relativeUrl}`, {
             ...config,
             headers: {
                 ...config.headers,
                 accept: 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('token')}`,
+                Authorization: `Bearer ${getToken()}`,
             },
-        }
-    );
-    if (res.status === StatusCodes.NO_CONTENT) {
-        // if no content, assume Generic Type is undefined, else user has to handle in code
-        return undefined as T;
+        });
+
+    let res = await doFetch();
+    if (res.status === StatusCodes.UNAUTHORIZED && (await tryRefresh())) {
+        res = await doFetch(); // retry once with the refreshed id token
     }
+
+    if (res.status === StatusCodes.NO_CONTENT) return undefined as T;
     const apiResponse = await res.json();
     if (!res.ok) {
         if (res.status === StatusCodes.UNAUTHORIZED) {
-            localStorage.removeItem('token');
+            clearTokens();
             window.location.href = `${window.location.origin}/login`;
             return undefined as T;
         }

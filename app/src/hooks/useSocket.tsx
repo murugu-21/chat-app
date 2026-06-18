@@ -1,14 +1,12 @@
 import { io } from 'socket.io-client';
 import { useEffect } from 'react';
-
-import { WEBSOCKET_URL } from '../env';
+import { BACKEND_URL } from '../env';
+import { getToken } from '../lib/auth';
 
 export function useSocket() {
-    const socket = io(WEBSOCKET_URL, {
+    const socket = io(BACKEND_URL, {
         autoConnect: false,
-        extraHeaders: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
+        auth: { token: getToken() },
     });
     useEffect(() => {
         socket.connect();
