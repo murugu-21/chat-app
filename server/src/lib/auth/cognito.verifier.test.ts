@@ -83,6 +83,14 @@ describe('makeVerifier (cognito)', () => {
     });
 });
 
+describe('makeVerifier (cognito) — missing vars', () => {
+    it('throws when mode=cognito but issuer and clientId are missing', () => {
+        expect(() => makeVerifier({ mode: 'cognito' })).toThrow(
+            'cognito verifier requires issuer and clientId',
+        );
+    });
+});
+
 describe('makeVerifier (dev)', () => {
     const verify = makeVerifier({ mode: 'dev' });
 
