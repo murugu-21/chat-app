@@ -4,7 +4,6 @@ const baseEnv = {
     NODE_ENV: 'test',
     ADMIN_API_KEY: '00000000-0000-0000-0000-000000000000',
     PORT: '3000',
-    WEBSOCKET_PORT: '3001',
     DATABASE_URL: 'mongodb://localhost:27017',
     AWS_REGION: 'ap-south-1',
     CLIENT_URL: 'http://localhost:5173',

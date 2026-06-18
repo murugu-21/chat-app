@@ -6,7 +6,6 @@ const env = createEnv({
         NODE_ENV: z.enum(['local', 'dev', 'prod', 'test']),
         ADMIN_API_KEY: z.string().uuid(),
         PORT: z.coerce.number().min(0).max(9999),
-        WEBSOCKET_PORT: z.coerce.number().min(0).max(9999),
         DATABASE_URL: z.string(),
         AWS_REGION: z.enum(['ap-south-1']),
         CLIENT_URL: z.string().url(),

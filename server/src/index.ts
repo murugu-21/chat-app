@@ -1,3 +1,4 @@
+import http from 'http';
 import express, { Express } from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
@@ -18,6 +19,7 @@ import messageRouter from './features/message/message.route.js';
 import globalErrorHandler from './errorHandler/globalErrorHandler.js';
 import zodErrorHandler from './errorHandler/zodErrorHandler.js';
 import { corsList } from './constants.js';
+import { io } from './features/socket/index.js';
 
 const app: Express = express();
 
@@ -58,6 +60,9 @@ app.use(zodErrorHandler);
 
 app.use(globalErrorHandler);
 
-app.listen(env.PORT, () => {
+const server = http.createServer(app);
+io.attach(server);
+
+server.listen(env.PORT, () => {
     console.log(`server running on PORT: ${env.PORT}`);
 });
