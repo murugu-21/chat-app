@@ -8,6 +8,7 @@ import FullPageLoader from './utils/FullPageLoader';
 import SiteDown from './utils/SiteDown';
 import { useNavigate } from 'react-router';
 import Button from '../components/Button';
+import { logout } from '../lib/auth';
 
 const searchSchema = z.object({
     query: z.string().min(3),
@@ -76,6 +77,15 @@ export default function Home(): JSX.Element {
 
     return (
         <div className="p-16 flex flex-col gap-4 justify-center items-start">
+            <div className="flex justify-end w-full">
+                <Button
+                    className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                    type="button"
+                    onClick={async () => logout()}
+                >
+                    <span>Sign out</span>
+                </Button>
+            </div>
             <div className="flex justify-end">
                 <form onSubmit={onSubmit}>
                     <input
