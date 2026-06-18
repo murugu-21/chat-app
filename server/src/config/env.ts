@@ -15,6 +15,9 @@ const env = createEnv({
         // Directory for winston file logs. Defaults to /var/log/chat-app (the
         // container path); override to a writable dir for local dev.
         LOG_DIR: z.string().default('/var/log/chat-app'),
+        // File the server stamps with last-activity epoch seconds; the on-box
+        // idle-check reads it to scale the ASG to zero.
+        ACTIVITY_FILE: z.string().optional(),
     },
     runtimeEnv: process.env,
 });

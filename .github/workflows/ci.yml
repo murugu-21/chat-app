@@ -1,0 +1,24 @@
+name: CI
+on:
+  push: { branches: [main, "feat/**", "fix/**"] }
+  pull_request: { branches: [main] }
+jobs:
+  test:
+    name: Build & Test (server)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - name: Install
+        working-directory: server
+        run: npm ci
+      - name: Build
+        working-directory: server
+        run: npm run build
+      - name: Test
+        working-directory: server
+        run: npm test
