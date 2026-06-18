@@ -9,6 +9,7 @@ import env from './config/env.js';
 import jsonMetaDataMW from './middleware/jsonMetaData.middleware.js';
 import { requestLoggerMW } from './middleware/requestLogger.middleware.js';
 import { activityMW } from './middleware/activity.middleware.js';
+import { stampActivity } from './lib/activity/index.js';
 
 import healthCheckRouter from './features/healthcheck/healthcheck.route.js';
 import userRouter from './features/user/user.route.js';
@@ -61,5 +62,9 @@ const server = http.createServer(app);
 io.attach(server);
 
 server.listen(env.PORT, () => {
+    // Stamp a baseline activity time at boot. Without this, a freshly-woken box
+    // that only ever receives /health checks never creates the activity file, and
+    // the on-box idle-check conservatively never scales it down (runs forever).
+    stampActivity();
     console.log(`server running on PORT: ${env.PORT}`);
 });
