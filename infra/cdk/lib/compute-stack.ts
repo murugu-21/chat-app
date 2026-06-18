@@ -261,13 +261,19 @@ export class ComputeStack extends cdk.Stack {
       "5c32fqvmu4fmta044ut5udm6j1";
     const webOrigin =
       (this.node.tryGetContext("webOrigin") as string | undefined) ?? "https://chat.murugappan.dev";
-    // Custom domain for the wake endpoint → https://<domain>/<basePath>/wake.
-    // The ACM cert (REGIONAL, this region) must be created + DNS-validated by the
-    // operator (murugappan.dev is on Cloudflare, not Route53), then passed by ARN.
+    // Branded custom domain for the wake endpoint → https://<domain>/<basePath>/wake.
+    // murugappan.dev is on Cloudflare (not Route53), so the REGIONAL ACM cert (this
+    // region) is DNS-validated manually. Opt in with `-c wakeDomain=true`: CDK then
+    // creates + OWNS the cert (tracked in the stack, auto-renewed), and `cdk deploy`
+    // WAITS in CREATE_IN_PROGRESS until you add the validation CNAME (shown in the ACM
+    // console) to Cloudflare. Pass `-c wakeCertArn=<arn>` instead to import a
+    // pre-existing cert. Neither → fall back to the default execute-api URL.
     const wakeDomainName =
       (this.node.tryGetContext("wakeDomainName") as string | undefined) ?? "api-gateway-ap-south-1.murugappan.dev";
     const wakeBasePath = (this.node.tryGetContext("wakeBasePath") as string | undefined) ?? "chat-app";
     const wakeCertArn = this.node.tryGetContext("wakeCertArn") as string | undefined;
+    const enableWakeDomain =
+      (this.node.tryGetContext("wakeDomain") as string | undefined) === "true" || !!wakeCertArn;
 
     if (cognitoIssuer && cognitoClientId) {
       const wakeFn = new lambda.Function(this, "WakeFn", {
@@ -324,15 +330,23 @@ export class ComputeStack extends cdk.Stack {
         }),
       });
 
-      // Custom domain + base-path mapping → /<basePath>/wake on the branded host.
-      // Gated on the cert ARN (the cert + its DNS validation are operator-owned,
-      // since the zone is on Cloudflare). Without it, fall back to the default
-      // execute-api URL so the stack still deploys.
+      // Branded custom domain + base-path mapping → /<basePath>/wake on the host.
+      // CDK owns the REGIONAL ACM cert (DNS-validated manually — the zone is on
+      // Cloudflare), unless an existing cert ARN is imported. Without the domain
+      // enabled, fall back to the default execute-api URL so the stack still deploys.
       let wakeUrl = `${wakeApi.apiEndpoint}/wake`;
-      if (wakeCertArn) {
+      if (enableWakeDomain) {
+        const certificate: acm.ICertificate = wakeCertArn
+          ? acm.Certificate.fromCertificateArn(this, "WakeCert", wakeCertArn)
+          : new acm.Certificate(this, "WakeCert", {
+              domainName: wakeDomainName,
+              // Cloudflare-hosted zone → no Route53 automation: CDK creates the cert,
+              // and the deploy blocks until the validation CNAME (ACM console) is added.
+              validation: acm.CertificateValidation.fromDns(),
+            });
         const wakeDomain = new apigwv2.DomainName(this, "WakeDomain", {
           domainName: wakeDomainName,
-          certificate: acm.Certificate.fromCertificateArn(this, "WakeCert", wakeCertArn),
+          certificate,
         });
         new apigwv2.ApiMapping(this, "WakeApiMapping", {
           api: wakeApi,
@@ -344,6 +358,13 @@ export class ComputeStack extends cdk.Stack {
           value: wakeDomain.regionalDomainName,
           description: `DNS: CNAME ${wakeDomainName} -> this target (DNS-only / NOT proxied — API Gateway terminates TLS with the ACM cert)`,
         });
+        if (!wakeCertArn) {
+          new cdk.CfnOutput(this, "WakeCertArn", {
+            value: certificate.certificateArn,
+            description:
+              "CDK-managed ACM cert for the wake domain. While CREATE is pending, add the validation CNAME from the ACM console to Cloudflare (DNS-only) so ACM can issue it.",
+          });
+        }
       }
 
       new cdk.CfnOutput(this, "WakeUrl", {

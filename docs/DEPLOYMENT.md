@@ -88,21 +88,23 @@ Notes:
 
 The wake endpoint (`POST /wake`) starts the box from scale-zero. Without a custom
 domain it falls back to an `execute-api.amazonaws.com` URL (fully functional).
-To get `https://api-gateway-ap-south-1.murugappan.dev/chat-app/wake`:
+To get `https://api-gateway-ap-south-1.murugappan.dev/chat-app/wake`, opt in with
+**`-c wakeDomain=true`** in Step 5 — **CDK then creates and owns** the REGIONAL ACM
+certificate (in `ap-south-1`) as a stack resource. You no longer pre-create it.
 
-1. **Create a REGIONAL ACM certificate** for `api-gateway-ap-south-1.murugappan.dev`
-   in **`ap-south-1`** (regional — NOT us-east-1):
-   ```bash
-   aws acm request-certificate \
-     --region ap-south-1 \
-     --domain-name api-gateway-ap-south-1.murugappan.dev \
-     --validation-method DNS
-   ```
-2. ACM shows a CNAME record for DNS validation — add it in **Cloudflare** (DNS-only,
-   not proxied). Wait for certificate status to become `ISSUED`.
-3. Note the certificate ARN — pass it as `-c wakeCertArn=<arn>` in Step 5.
+Because `murugappan.dev` is on **Cloudflare** (not Route53), CDK can't auto-write the
+DNS validation record, so the first deploy validates manually:
 
-Without the cert, omit `-c wakeCertArn=` entirely.
+1. Start the deploy (Step 5) with `-c wakeDomain=true`. It pauses with the cert in
+   `CREATE_IN_PROGRESS`.
+2. While it waits, open the **ACM console → the new cert** → copy its **CNAME validation
+   record** and add it in **Cloudflare** (DNS-only, not proxied).
+3. ACM validates → the cert issues → the deploy continues automatically. ACM auto-renews
+   against that same record, so leave it in place.
+
+The cert ARN is emitted as the `WakeCertArn` stack output. (Already have a cert? Import
+it instead with `-c wakeCertArn=<arn>` and skip the steps above.) For the plain
+execute-api URL, omit both flags.
 
 ---
 
@@ -111,10 +113,13 @@ Without the cert, omit `-c wakeCertArn=` entirely.
 ```bash
 cd infra/cdk
 CDK_DEFAULT_REGION=ap-south-1 npx cdk deploy ChatAppCompute \
-  -c wakeCertArn=<arn-from-step-4>
+  -c wakeDomain=true
 ```
 
-Omit `-c wakeCertArn=…` if you skipped Step 4.
+Use `-c wakeDomain=true` to provision the branded wake domain (CDK creates the ACM
+cert — complete its DNS validation per Step 4 while the deploy waits). Use
+`-c wakeCertArn=<arn>` instead to import an existing cert, or omit both for the plain
+execute-api URL.
 
 **Save the stack outputs** — you will need them in the following steps:
 
@@ -123,7 +128,8 @@ Omit `-c wakeCertArn=…` if you skipped Step 4.
 | `AsgName` | Manual scale override; GitHub Actions rollout |
 | `GithubDeployRoleArn` | GitHub repo variable `AWS_ROLE_ARN` (Step 7) |
 | `WakeUrl` | SPA env var `VITE_WAKE_URL` (Step 8) |
-| `WakeDomainTarget` | DNS CNAME target (Step 6, only if cert was passed) |
+| `WakeDomainTarget` | DNS CNAME target (Step 6, only with `-c wakeDomain=true`/`wakeCertArn`) |
+| `WakeCertArn` | CDK-managed ACM cert ARN (only when CDK created it) |
 
 The stack provisions: launch template (`t4g.small`, AL2023 ARM, 10 GB gp3,
 IMDSv2), ASG (min 0 / max 1 / desired 1), instance role (SSM Session Manager +
@@ -137,7 +143,7 @@ wake Lambda, and SNS email notification on cold-start.
 
 ## Step 6 — DNS and Cloudflare Tunnel
 
-### DNS (wake domain — only if you passed a cert in Step 4)
+### DNS (wake domain — only if you deployed with `-c wakeDomain=true`/`wakeCertArn`)
 
 In Cloudflare DNS, add:
 

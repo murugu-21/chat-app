@@ -3,7 +3,7 @@ import * as cdk from "aws-cdk-lib";
 import { Template, Match } from "aws-cdk-lib/assertions";
 import { ComputeStack } from "../lib/compute-stack";
 
-function template() {
+function template(extraContext: Record<string, unknown> = {}) {
   const app = new cdk.App({
     context: {
       cognitoIssuer: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_el6h3ZKKw",
@@ -16,6 +16,7 @@ function template() {
           { subnetId: "subnet-1", cidr: "172.31.0.0/20", availabilityZone: "ap-south-1a", routeTableId: "rtb-1" },
         ] }],
       },
+      ...extraContext,
     },
   });
   const stack = new ComputeStack(app, "ChatAppCompute", { env: { account: "123456789012", region: "ap-south-1" } });
@@ -45,6 +46,33 @@ describe("ComputeStack", () => {
     t.hasResourceProperties("AWS::ApiGatewayV2::Authorizer", {
       AuthorizerType: "JWT",
       JwtConfiguration: { Audience: ["5c32fqvmu4fmta044ut5udm6j1"] },
+    });
+  });
+  it("does not provision a branded wake domain or ACM cert by default", () => {
+    const t = template();
+    t.resourceCountIs("AWS::CertificateManager::Certificate", 0);
+    t.resourceCountIs("AWS::ApiGatewayV2::DomainName", 0);
+  });
+  it("with -c wakeDomain=true, CDK owns a DNS-validated regional ACM cert mapped to the wake domain", () => {
+    const t = template({ wakeDomain: "true" });
+    t.hasResourceProperties("AWS::CertificateManager::Certificate", {
+      DomainName: "api-gateway-ap-south-1.murugappan.dev",
+      ValidationMethod: "DNS",
+    });
+    t.hasResourceProperties("AWS::ApiGatewayV2::DomainName", {
+      DomainName: "api-gateway-ap-south-1.murugappan.dev",
+    });
+    t.hasResourceProperties("AWS::ApiGatewayV2::ApiMapping", {
+      ApiMappingKey: "chat-app",
+    });
+  });
+  it("with -c wakeCertArn, imports the cert instead of creating one", () => {
+    const t = template({
+      wakeCertArn: "arn:aws:acm:ap-south-1:123456789012:certificate/abc-123",
+    });
+    t.resourceCountIs("AWS::CertificateManager::Certificate", 0);
+    t.hasResourceProperties("AWS::ApiGatewayV2::DomainName", {
+      DomainName: "api-gateway-ap-south-1.murugappan.dev",
     });
   });
   it("instance role can set its own ASG desired capacity", () => {
