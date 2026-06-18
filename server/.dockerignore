@@ -1,0 +1,9 @@
+node_modules
+build
+.env
+.env.*
+.git
+*.log
+**/*.test.ts
+Dockerfile
+.dockerignore
