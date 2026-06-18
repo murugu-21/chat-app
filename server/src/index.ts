@@ -8,6 +8,7 @@ import env from './config/env.js';
 
 import jsonMetaDataMW from './middleware/jsonMetaData.middleware.js';
 import { requestLoggerMW } from './middleware/requestLogger.middleware.js';
+import { activityMW } from './middleware/activity.middleware.js';
 
 import healthCheckRouter from './features/healthcheck/healthcheck.route.js';
 import userRouter from './features/user/user.route.js';
@@ -39,6 +40,8 @@ app.use(
 );
 
 app.use(requestLoggerMW);
+
+app.use(activityMW);
 
 app.use(jsonMetaDataMW);
 
