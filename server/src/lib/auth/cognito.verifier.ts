@@ -4,6 +4,7 @@ export type VerifiedIdentity = {
     email: string;
     emailVerified: boolean;
     sub: string;
+    picture?: string;
 };
 
 export type Verifier = (token: string) => Promise<VerifiedIdentity>;
@@ -21,7 +22,7 @@ export const makeVerifier = (opts: {
             }
             const email = token.slice('dev_'.length);
             if (!email) throw new Error('invalid dev token');
-            return { email, emailVerified: true, sub: `dev_${email}` };
+            return { email, emailVerified: true, sub: `dev_${email}`, picture: undefined };
         };
     }
 
@@ -48,6 +49,7 @@ export const makeVerifier = (opts: {
             email,
             emailVerified: payload.email_verified === true,
             sub: payload.sub,
+            picture: typeof payload.picture === 'string' ? payload.picture : undefined,
         };
     };
 };

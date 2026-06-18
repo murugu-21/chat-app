@@ -65,6 +65,12 @@ describe('makeVerifier (cognito)', () => {
         await expect(verify(token)).rejects.toThrow('token missing sub');
     });
 
+    it('returns the picture claim when present', async () => {
+        const { verify, sign } = await setupCognito();
+        const token = await sign({ token_use: 'id', email: 'a@b.com', email_verified: true, picture: 'https://pic/x.png' });
+        await expect(verify(token)).resolves.toMatchObject({ email: 'a@b.com', picture: 'https://pic/x.png' });
+    });
+
     it('rejects a token with the wrong audience', async () => {
         const { publicKey, privateKey } = await generateKeyPair('RS256');
         const pubJwk = await exportJWK(publicKey);

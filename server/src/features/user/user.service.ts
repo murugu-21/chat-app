@@ -25,10 +25,12 @@ const searchUsers = async (
 
 const getOrCreateUserByEmail = async ({
     email,
+    avatarUrl,
 }: {
     email: string;
+    avatarUrl?: string;
 }): Promise<UserT> => {
-    return userDb.getOrCreateUserByEmail({ email });
+    return userDb.getOrCreateUserByEmail({ email, avatarUrl });
 };
 
 export { getUserByEmail, searchUsers, getOrCreateUserByEmail };

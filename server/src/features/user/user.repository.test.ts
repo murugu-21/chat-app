@@ -16,6 +16,16 @@ afterAll(async () => {
 });
 
 describe('getOrCreateUserByEmail', () => {
+    it('stores avatarUrl on insert and refreshes it on update', async () => {
+        const a = await getOrCreateUserByEmail({ email: 'av@example.com', avatarUrl: 'https://pic/1.png' });
+        expect(a.avatarUrl).toBe('https://pic/1.png');
+        const b = await getOrCreateUserByEmail({ email: 'av@example.com', avatarUrl: 'https://pic/2.png' });
+        expect(b._id.toString()).toBe(a._id.toString());
+        expect(b.avatarUrl).toBe('https://pic/2.png'); // refreshed
+        const c = await getOrCreateUserByEmail({ email: 'av@example.com' }); // no picture (dev token)
+        expect(c.avatarUrl).toBe('https://pic/2.png'); // not cleared
+    });
+
     it('creates a user on first call and is idempotent', async () => {
         const first = await getOrCreateUserByEmail({ email: 'jit@example.com' });
         expect(first.email).toBe('jit@example.com');

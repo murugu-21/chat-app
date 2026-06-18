@@ -9,6 +9,10 @@ const userSchema = new Schema(
             unique: true,
             required: true,
         },
+        avatarUrl: {
+            type: String,
+            required: false,
+        },
     },
     {
         timestamps: true,

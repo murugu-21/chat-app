@@ -24,12 +24,17 @@ const searchUsers = async (
 
 const getOrCreateUserByEmail = async ({
     email,
+    avatarUrl,
 }: {
     email: string;
+    avatarUrl?: string;
 }): Promise<UserT> => {
     const user = await userModel.findOneAndUpdate(
         { email },
-        { $setOnInsert: { email } },
+        {
+            ...(avatarUrl ? { $set: { avatarUrl } } : {}),
+            $setOnInsert: { email },
+        },
         { upsert: true, new: true, setDefaultsOnInsert: true },
     ).lean();
     return user as UserT;
