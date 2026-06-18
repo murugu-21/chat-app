@@ -19,13 +19,17 @@ function run(mw: any, headers: Record<string, string>) {
 
 describe('makeRequireAuth', () => {
     it('attaches the user for a valid bearer token', async () => {
+        const verify = vi.fn().mockResolvedValue({ email: 'a@b.com', emailVerified: true, sub: 's' });
+        const getOrCreateUser = vi.fn().mockResolvedValue(fakeUser);
         const mw = makeRequireAuth({
-            verify: vi.fn().mockResolvedValue({ email: 'a@b.com', emailVerified: true, sub: 's' }),
-            getOrCreateUser: vi.fn().mockResolvedValue(fakeUser),
+            verify,
+            getOrCreateUser,
         });
         const { req, err } = await run(mw, { authorization: 'Bearer good' });
         expect(err).toBeUndefined();
         expect((req as any).user).toBe(fakeUser);
+        expect(verify).toHaveBeenCalledWith('good');
+        expect(getOrCreateUser).toHaveBeenCalledWith({ email: 'a@b.com' });
     });
 
     it('calls next with a 401 AppError when the header is missing', async () => {
