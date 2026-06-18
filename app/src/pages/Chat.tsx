@@ -1,6 +1,6 @@
 import { useParams } from 'react-router';
 import useSWR from 'swr';
-import { useEffect } from 'react';
+import { useEffect, type JSX} from 'react';
 import fetcher from '@/utils/fetcher';
 import { useSocket } from '@/hooks/useSocket';
 import { ChatHeader } from '@/components/chat/ChatHeader';

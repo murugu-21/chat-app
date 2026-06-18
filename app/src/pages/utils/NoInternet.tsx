@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 import { WifiOff } from 'lucide-react';
 
 export default function NoInternet(): JSX.Element {

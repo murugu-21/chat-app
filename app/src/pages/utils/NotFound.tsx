@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 import { FileQuestion } from 'lucide-react';
 
 export default function NotFound(): JSX.Element {

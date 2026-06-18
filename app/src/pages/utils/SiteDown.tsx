@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 import { ServerCrash } from 'lucide-react';
 
 export default function SiteDown(): JSX.Element {

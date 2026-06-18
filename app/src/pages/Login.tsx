@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 import { generateVerifier, challengeFor, authorizeUrl } from '@/lib/pkce';
 import { cognitoConfig } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
