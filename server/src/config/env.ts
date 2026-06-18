@@ -13,6 +13,9 @@ const env = createEnv({
         SENTRY_DSN: z.string().url(),
         NOTIFICATIONS_EMAIL: z.string().email(),
         JWT_SECRET: z.string().uuid(),
+        AUTH_MODE: z.enum(['dev', 'cognito']),
+        COGNITO_ISSUER: z.string().url().optional(),
+        COGNITO_CLIENT_ID: z.string().optional(),
     },
     runtimeEnv: process.env,
 });
