@@ -1,0 +1,40 @@
+# ---- Dependencies ----
+**/node_modules/
+.pnp
+.pnp.js
+
+# ---- Build / compiled output ----
+**/dist/
+**/build/
+*.tsbuildinfo
+
+# ---- AWS CDK ----
+**/cdk.out/
+.cdk.staging/
+# cdk.context.json is intentionally NOT ignored — it caches VPC/account lookups
+# for reproducible synth and is meant to be committed (AWS CDK convention).
+
+# ---- Secrets / env ----
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# ---- Scale-to-zero runtime state (created by the prod-local compose smoke) ----
+infra/compose/state/
+
+# ---- Logs ----
+*.log
+**/*.log
+npm-debug.log*
+
+# ---- Test / coverage ----
+**/coverage/
+
+# ---- OS / editor cruft ----
+.DS_Store
+**/.DS_Store
+*.swp
+*~
