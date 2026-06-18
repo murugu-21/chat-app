@@ -68,4 +68,7 @@ jobs:
             --query "AutoScalingGroups[?contains(AutoScalingGroupName, 'ChatAppCompute')].AutoScalingGroupName | [0]" \
             --output text)
           [ -n "$ASG" ] && [ "$ASG" != "None" ] || { echo "No ChatAppCompute ASG found"; exit 1; }
-          aws autoscaling start-instance-refresh --auto-scaling-group-name "$ASG"
+          aws autoscaling start-instance-refresh \
+            --auto-scaling-group-name "$ASG" \
+            --strategy Rolling \
+            --preferences '{"MinHealthyPercentage":0,"InstanceWarmup":300}'

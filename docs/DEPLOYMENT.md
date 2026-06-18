@@ -188,6 +188,8 @@ and rolls the ASG via an instance refresh:
 git tag v1.0.0 && git push origin v1.0.0
 ```
 
+**Note on scaled-to-zero rollouts:** When the box is scaled to zero (the normal idle state), the instance refresh is a no-op since there is no running instance — the new `:latest` image is picked up on the next wake (the userdata pulls it on boot). To force the new image immediately, wake the box first with `aws autoscaling set-desired-capacity ... --desired-capacity 1`, or it will roll naturally on the next cold start.
+
 Ensure GHCR packages are **public** (package → visibility) so the EC2 box can pull
 images without authentication.
 
