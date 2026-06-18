@@ -8,7 +8,7 @@ import * as userService from '../features/user/user.service.js';
 
 type Deps = {
     verify: Verifier;
-    getOrCreateUser: (args: { email: string }) => Promise<UserT>;
+    getOrCreateUser: (args: { email: string; avatarUrl?: string }) => Promise<UserT>;
 };
 
 const unauthorized = (messageForSentry: string) =>
@@ -28,7 +28,7 @@ export const makeRequireAuth =
                 return next(unauthorized('missing bearer token'));
             }
             const identity = await verify(token);
-            req.user = await getOrCreateUser({ email: identity.email });
+            req.user = await getOrCreateUser({ email: identity.email, avatarUrl: identity.picture });
             return next();
         } catch (e) {
             return next(unauthorized(e instanceof Error ? e.message : 'auth failed'));

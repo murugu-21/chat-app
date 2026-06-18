@@ -3,7 +3,7 @@ import type { UserT } from '../user/user.model.js';
 
 type Deps = {
     verify: Verifier;
-    getOrCreateUser: (args: { email: string }) => Promise<UserT>;
+    getOrCreateUser: (args: { email: string; avatarUrl?: string }) => Promise<UserT>;
 };
 
 export const makeSocketAuth =
@@ -13,7 +13,7 @@ export const makeSocketAuth =
             const token: string | undefined = socket.handshake?.auth?.token;
             if (!token) throw new Error('missing token');
             const identity = await verify(token);
-            socket.request.user = await getOrCreateUser({ email: identity.email });
+            socket.request.user = await getOrCreateUser({ email: identity.email, avatarUrl: identity.picture });
             next();
         } catch {
             next(new Error('unauthorized'));

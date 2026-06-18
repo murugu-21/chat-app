@@ -9,15 +9,17 @@ function fakeSocket(token?: string) {
 
 describe('makeSocketAuth', () => {
     it('attaches user to socket.request on a valid token', async () => {
+        const getOrCreateUser = vi.fn().mockResolvedValue(fakeUser);
         const mw = makeSocketAuth({
-            verify: vi.fn().mockResolvedValue({ email: 'a@b.com', emailVerified: true, sub: 's' }),
-            getOrCreateUser: vi.fn().mockResolvedValue(fakeUser),
+            verify: vi.fn().mockResolvedValue({ email: 'a@b.com', emailVerified: true, sub: 's', picture: 'https://pic/x.png' }),
+            getOrCreateUser,
         });
         const socket = fakeSocket('good');
         const next = vi.fn();
         await mw(socket as any, next);
         expect(socket.request.user).toBe(fakeUser);
         expect(next).toHaveBeenCalledWith();
+        expect(getOrCreateUser).toHaveBeenCalledWith({ email: 'a@b.com', avatarUrl: 'https://pic/x.png' });
     });
 
     it('calls next with an error when the token is missing', async () => {
