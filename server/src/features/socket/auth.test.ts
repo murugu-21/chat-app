@@ -1,0 +1,29 @@
+import { describe, expect, it, vi } from 'vitest';
+import { makeSocketAuth } from './auth.js';
+
+const fakeUser = { _id: 'u1', email: 'a@b.com' } as any;
+
+function fakeSocket(token?: string) {
+    return { handshake: { auth: token ? { token } : {} }, request: {} as any };
+}
+
+describe('makeSocketAuth', () => {
+    it('attaches user to socket.request on a valid token', async () => {
+        const mw = makeSocketAuth({
+            verify: vi.fn().mockResolvedValue({ email: 'a@b.com', emailVerified: true, sub: 's' }),
+            getOrCreateUser: vi.fn().mockResolvedValue(fakeUser),
+        });
+        const socket = fakeSocket('good');
+        const next = vi.fn();
+        await mw(socket as any, next);
+        expect(socket.request.user).toBe(fakeUser);
+        expect(next).toHaveBeenCalledWith();
+    });
+
+    it('calls next with an error when the token is missing', async () => {
+        const mw = makeSocketAuth({ verify: vi.fn(), getOrCreateUser: vi.fn() });
+        const next = vi.fn();
+        await mw(fakeSocket() as any, next);
+        expect(next.mock.calls[0][0]).toBeInstanceOf(Error);
+    });
+});
