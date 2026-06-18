@@ -12,6 +12,7 @@ const env = createEnv({
         AUTH_MODE: z.enum(['dev', 'cognito']),
         COGNITO_ISSUER: z.string().url().optional(),
         COGNITO_CLIENT_ID: z.string().optional(),
+        ACTIVITY_FILE: z.string().optional(),
     },
     runtimeEnv: process.env,
 });

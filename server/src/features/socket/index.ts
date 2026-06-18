@@ -1,6 +1,7 @@
 import { Server } from 'socket.io';
 
 import { corsList } from '../../constants.js';
+import { stampActivity } from '../../lib/activity/index.js';
 import * as chatService from '../chat/chat.service.js';
 import { makeSocketAuth } from './auth.js';
 import { verifyToken } from '../../lib/auth/index.js';
@@ -18,6 +19,7 @@ io.use(
 );
 
 io.on('connection', (socket) => {
+    stampActivity();
     const userId = (socket.request as any).user?.email;
     console.log(`${userId} user connected`);
 
