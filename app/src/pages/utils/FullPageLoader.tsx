@@ -1,9 +1,6 @@
-import { LoadingSpinner } from "../../components/LoadingSpinner";
+import type { JSX } from 'react';
+import { Loader2 } from 'lucide-react';
 
 export default function FullPageLoader(): JSX.Element {
-  return (
-      <div className="w-full h-full flex justify-center items-center">
-          <LoadingSpinner />
-      </div>
-  );
+    return <div className="flex min-h-screen items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
 }

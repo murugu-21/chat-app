@@ -1,25 +1,4 @@
-import { Types } from 'mongoose';
-import { UserDataT, userModel, UserT } from './user.model.js';
-
-const createUser = async (userData: UserDataT): Promise<UserT> => {
-    const user = await userModel.create(userData);
-    return user;
-};
-
-const changePassword = async ({
-    userId,
-    newPassword,
-}: {
-    userId: Types.ObjectId;
-    newPassword: string;
-}): Promise<UserT | null> => {
-    const user = await userModel.findOneAndUpdate(
-        { _id: userId },
-        { password: newPassword },
-        { new: true },
-    );
-    return user;
-};
+import { userModel, UserT } from './user.model.js';
 
 const getUserByEmail = async ({
     email,
@@ -30,22 +9,45 @@ const getUserByEmail = async ({
     return user;
 };
 
-const getUserById = async ({
-    userId,
-}: {
-    userId: string;
-}): Promise<UserT | null> => {
-    const user = await userModel.findOne({ _id: userId }).lean();
-    return user;
-};
-
 const searchUsers = async (
     query: string,
 ): Promise<Array<Pick<UserT, '_id' | 'email'>>> => {
+    // Case-insensitive substring match; escape regex metacharacters so a
+    // literal '.' in an email matches a '.' (not "any char") and the query
+    // can't inject a pattern.
+    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const users = await userModel
-        .find({ email: { $regex: '^' + query } }, { _id: 1, email: 1 })
+        .find({ email: { $regex: escaped, $options: 'i' } }, { _id: 1, email: 1 })
         .lean();
     return users;
 };
 
-export { createUser, changePassword, getUserByEmail, getUserById, searchUsers };
+const getOrCreateUserByEmail = async ({
+    email,
+    avatarUrl,
+}: {
+    email: string;
+    avatarUrl?: string;
+}): Promise<UserT> => {
+    const user = await userModel.findOneAndUpdate(
+        { email },
+        {
+            ...(avatarUrl ? { $set: { avatarUrl } } : {}),
+            $setOnInsert: { email },
+        },
+        { upsert: true, new: true, setDefaultsOnInsert: true },
+    ).lean();
+    return user as UserT;
+};
+
+const getUsersByEmails = async (
+    emails: string[],
+): Promise<Array<Pick<UserT, 'email' | 'avatarUrl'>>> => {
+    if (emails.length === 0) return [];
+    const users = await userModel
+        .find({ email: { $in: emails } }, { _id: 0, email: 1, avatarUrl: 1 })
+        .lean();
+    return users as Array<Pick<UserT, 'email' | 'avatarUrl'>>;
+};
+
+export { getUserByEmail, searchUsers, getOrCreateUserByEmail, getUsersByEmails };

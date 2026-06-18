@@ -9,9 +9,9 @@ const userSchema = new Schema(
             unique: true,
             required: true,
         },
-        password: {
+        avatarUrl: {
             type: String,
-            required: true,
+            required: false,
         },
     },
     {

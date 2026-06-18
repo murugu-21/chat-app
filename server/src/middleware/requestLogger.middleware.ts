@@ -5,6 +5,8 @@ import { NextFunction, Request, Response } from 'express';
 import { randomUUID } from 'crypto';
 import os from 'os';
 
+import env from '../config/env.js';
+
 const MESSAGE = Symbol.for('message');
 
 const LOG_LEVEL_SEVERITY = {
@@ -35,7 +37,7 @@ const logFormat = format((info: any) => {
 })();
 
 const fileTransport = new transports.File({
-    filename: `/var/log/chat-app/node/node.log`,
+    filename: `${env.LOG_DIR}/node/node.log`,
     level: LOG_LEVELS.INFO,
 });
 
@@ -65,7 +67,7 @@ const writeLog = (
 const wRequestLogger = createLogger({
     transports: [
         new transports.File({
-            filename: '/var/log/chat-app/request.log',
+            filename: `${env.LOG_DIR}/request.log`,
         }),
     ],
     format: format.combine(format.timestamp(), format.json()),

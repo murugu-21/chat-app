@@ -32,9 +32,16 @@ const createChat = async ({
     return chat1.chatId;
 };
 
-const listChatsOfUser = async (userId: string): Promise<Array<ChatT>> => {
+const listChatsOfUser = async (
+    userId: string,
+): Promise<Array<ChatT & { avatarUrl?: string }>> => {
     const chats = await chatDb.listChatsOfUser(userId);
-    return chats;
+    const peers = await userService.getUsersByEmails(chats.map((c) => c.chatName));
+    const avatarByEmail = new Map(peers.map((p) => [p.email, p.avatarUrl]));
+    return chats.map((c) => ({
+        ...c,
+        avatarUrl: avatarByEmail.get(c.chatName) ?? undefined,
+    }));
 };
 
 const getChatForUser = async ({

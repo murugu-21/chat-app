@@ -1,0 +1,25 @@
+# Local prod-smoke override: runs the prod image with dev auth, a published
+# port, and no Cloudflare tunnel. Supply DATABASE_URL yourself (e.g. an Atlas
+# URL or a locally-run mongo) via the shell env or an .env file in this dir.
+#
+#   docker compose \
+#     -f docker-compose.prod.yml \
+#     -f docker-compose.prod-local.override.yml \
+#     up --build
+#
+# Then: curl http://localhost:3000/health  -> {"message":"OK"}
+
+name: chat-app-prod
+
+services:
+  server:
+    environment:
+      NODE_ENV: local
+      AUTH_MODE: dev
+    ports:
+      - "3000:3000"
+
+  # Tunnel is not used locally. Override its command to a no-op so the prod
+  # file's cloudflared service doesn't try to dial out with a missing token.
+  cloudflared:
+    profiles: ["disabled"]

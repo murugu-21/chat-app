@@ -1,42 +1,48 @@
-import { Response, NextFunction } from "express";
-import { createServer } from 'http';
 import { Server } from 'socket.io';
 
-import { authJwtMW } from "../../lib/passport/index.js";
-import env from "../../config/env.js";
 import { corsList } from '../../constants.js';
 import * as chatService from '../chat/chat.service.js';
+import { makeSocketAuth } from './auth.js';
+import { verifyToken } from '../../lib/auth/index.js';
+import * as userService from '../user/user.service.js';
+import { addConnection, removeConnection, onlineEmails } from '../presence/presence.js';
 
-const server = createServer();
-const io = new Server(server, {
+const io = new Server({
     cors: { origin: corsList, methods: ['GET', 'POST'] },
 });
 
-io.engine.use((req: any, res: Response, next: NextFunction) => {
-    const isHandshake = req._query.sid === undefined;
-    if (isHandshake) {
-        authJwtMW(req, res, next);
-    } else {
-        next();
-    }
-});
+io.use(
+    makeSocketAuth({
+        verify: verifyToken,
+        getOrCreateUser: userService.getOrCreateUserByEmail,
+    }),
+);
 
 io.on('connection', (socket) => {
-    const userId = (socket.request as any).user?.email;
-    console.log(`${userId} user connected`);
+    const email = (socket.request as any).user?.email as string | undefined;
+    if (email) {
+        const wentOnline = addConnection(email);
+        socket.emit('presence:state', onlineEmails());
+        if (wentOnline) socket.broadcast.emit('presence:update', { email, online: true });
+    }
 
-    socket.on('disconnect', () => console.log(`${userId} user disconnected`));
+    socket.on('disconnect', () => {
+        if (email && removeConnection(email)) {
+            io.emit('presence:update', { email, online: false });
+        }
+    });
 
     socket.on('join', async (chatId, callback) => {
         try {
-            const chat = await chatService.getChatForUser({ userId: (socket.request as any).user._id, chatId });
+            const chat = await chatService.getChatForUser({
+                userId: (socket.request as any).user._id,
+                chatId,
+            });
             await socket.join(`message:${chat.chatId}`);
         } catch (e) {
-            callback({
-                status: 'NOK',
-            });
+            callback({ status: 'NOK' });
         }
-    })
+    });
 
     socket.on('leave', async (chatId, callback) => {
         try {
@@ -46,15 +52,9 @@ io.on('connection', (socket) => {
             });
             await socket.leave(`message:${chat.chatId}`);
         } catch (e) {
-            callback({
-                status: 'NOK',
-            });
+            callback({ status: 'NOK' });
         }
-    })
+    });
 });
 
-server.listen(env.WEBSOCKET_PORT, () => {
-    console.log(`websocket server running on PORT: ${env.WEBSOCKET_PORT}`);
-});
-
-export { io }
+export { io };
