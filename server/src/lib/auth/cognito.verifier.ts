@@ -43,10 +43,11 @@ export const makeVerifier = (opts: {
         }
         const email = payload.email as string | undefined;
         if (!email) throw new Error('token missing email');
+        if (!payload.sub) throw new Error('token missing sub');
         return {
             email,
             emailVerified: payload.email_verified === true,
-            sub: String(payload.sub),
+            sub: payload.sub,
         };
     };
 };

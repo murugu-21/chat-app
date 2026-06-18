@@ -48,6 +48,23 @@ describe('makeVerifier (cognito)', () => {
         await expect(verify(token)).rejects.toThrow();
     });
 
+    it('rejects an id token missing the sub claim', async () => {
+        const { publicKey, privateKey } = await generateKeyPair('RS256');
+        const pubJwk = await exportJWK(publicKey);
+        pubJwk.kid = 'test-key';
+        pubJwk.alg = 'RS256';
+        const jwks = createLocalJWKSet({ keys: [pubJwk] });
+        const verify = makeVerifier({ mode: 'cognito', issuer: ISSUER, clientId: CLIENT_ID, jwks });
+        const token = await new SignJWT({ token_use: 'id', email: 'a@b.com' })
+            .setProtectedHeader({ alg: 'RS256', kid: 'test-key' })
+            .setIssuer(ISSUER)
+            .setAudience(CLIENT_ID)
+            .setIssuedAt()
+            .setExpirationTime('5m')
+            .sign(privateKey);
+        await expect(verify(token)).rejects.toThrow('token missing sub');
+    });
+
     it('rejects a token with the wrong audience', async () => {
         const { publicKey, privateKey } = await generateKeyPair('RS256');
         const pubJwk = await exportJWK(publicKey);
