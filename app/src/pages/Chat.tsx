@@ -42,6 +42,9 @@ export default function Chat(): JSX.Element {
             headers: { 'Content-type': 'application/json' },
             body: JSON.stringify({ chatId, content }),
         });
+        // Show the sender's own message immediately — don't wait for the socket
+        // broadcast (which is when the receiver sees it).
+        await mutate();
     };
 
     if (!chatId) return <SiteDown />;
