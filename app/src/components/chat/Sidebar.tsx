@@ -1,6 +1,6 @@
 import { LogOut } from 'lucide-react';
-import { getEmail, logout } from '@/lib/auth';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { getEmail, getPicture, logout } from '@/lib/auth';
+import { UserAvatar } from '@/components/UserAvatar';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ModeToggle } from '@/components/theme/mode-toggle';
@@ -18,7 +18,7 @@ export function Sidebar() {
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon">
-                                <Avatar className="h-7 w-7"><AvatarFallback>{email.slice(0, 2).toUpperCase()}</AvatarFallback></Avatar>
+                                <UserAvatar email={email} src={getPicture()} className="h-7 w-7" />
                                 <span className="sr-only">Account menu</span>
                             </Button>
                         </DropdownMenuTrigger>

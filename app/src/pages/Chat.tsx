@@ -3,6 +3,7 @@ import useSWR from 'swr';
 import { useEffect, type JSX} from 'react';
 import fetcher from '@/utils/fetcher';
 import { useSocket } from '@/hooks/useSocket';
+import { usePresence } from '@/components/socket/SocketProvider';
 import { ChatHeader } from '@/components/chat/ChatHeader';
 import { MessageList } from '@/components/chat/MessageList';
 import { Composer } from '@/components/chat/Composer';
@@ -10,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import SiteDown from './utils/SiteDown';
 
 type Message = { _id: string; content: string; createdBy: { email: string } };
-type Chat = { chatId: string; chatName: string };
+type Chat = { chatId: string; chatName: string; avatarUrl?: string };
 
 export default function Chat(): JSX.Element {
     const { socket } = useSocket();
@@ -18,7 +19,9 @@ export default function Chat(): JSX.Element {
     const { data: messages, isLoading, error, mutate } =
         useSWR<Message[]>(chatId ? `message/list/${chatId}` : null, fetcher);
     const { data: chats } = useSWR<Chat[]>('chat/list', fetcher);
-    const name = (chats ?? []).find((c) => c.chatId === chatId)?.chatName ?? 'Conversation';
+    const peer = (chats ?? []).find((c) => c.chatId === chatId);
+    const name = peer?.chatName ?? 'Conversation';
+    const { isOnline } = usePresence();
 
     useEffect(() => {
         const join = () => socket.emit('join', chatId);
@@ -47,7 +50,7 @@ export default function Chat(): JSX.Element {
 
     return (
         <div className="flex h-full flex-col">
-            <ChatHeader name={name} />
+            <ChatHeader name={name} avatarUrl={peer?.avatarUrl} online={isOnline(name)} />
             <MessageList messages={messages} />
             <Composer onSend={send} />
         </div>

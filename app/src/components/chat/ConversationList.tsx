@@ -2,15 +2,17 @@ import useSWR from 'swr';
 import { useNavigate, useParams } from 'react-router';
 import fetcher from '@/utils/fetcher';
 import { cn } from '@/lib/utils';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
+import { usePresence } from '@/components/socket/SocketProvider';
+import { UserAvatar } from '@/components/UserAvatar';
 
-type Chat = { chatId: string; chatName: string };
+type Chat = { chatId: string; chatName: string; avatarUrl?: string };
 
 export function ConversationList() {
     const { data: chats, isLoading } = useSWR<Chat[]>('chat/list', fetcher);
     const navigate = useNavigate();
     const { chatId: activeId } = useParams();
+    const { isOnline } = usePresence();
 
     if (isLoading) {
         return (
@@ -36,9 +38,7 @@ export function ConversationList() {
                         chat.chatId === activeId && 'bg-accent',
                     )}
                 >
-                    <Avatar className="h-9 w-9">
-                        <AvatarFallback>{chat.chatName.slice(0, 2).toUpperCase()}</AvatarFallback>
-                    </Avatar>
+                    <UserAvatar email={chat.chatName} src={chat.avatarUrl} online={isOnline(chat.chatName)} />
                     <span className="truncate">{chat.chatName}</span>
                 </button>
             ))}

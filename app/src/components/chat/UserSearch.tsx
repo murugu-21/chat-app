@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 const schema = z.object({ query: z.string().min(3) });
 type Form = z.infer<typeof schema>;
 type User = { _id: string; email: string };
-type Chat = { chatId: string; chatName: string };
+type Chat = { chatId: string; chatName: string; avatarUrl?: string };
 
 export function UserSearch() {
     const { register, handleSubmit, formState: { errors } } = useForm<Form>({ resolver: zodResolver(schema) });
