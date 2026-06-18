@@ -24,6 +24,17 @@ describe('makeSocketAuth', () => {
         const mw = makeSocketAuth({ verify: vi.fn(), getOrCreateUser: vi.fn() });
         const next = vi.fn();
         await mw(fakeSocket() as any, next);
-        expect(next.mock.calls[0][0]).toBeInstanceOf(Error);
+        expect(next.mock.calls[0][0]?.message).toBe('unauthorized');
+    });
+
+    it('calls next with a generic unauthorized error when verify fails', async () => {
+        const mw = makeSocketAuth({
+            verify: vi.fn().mockRejectedValue(new Error('invalid token')),
+            getOrCreateUser: vi.fn(),
+        });
+        const socket = fakeSocket('bad');
+        const next = vi.fn();
+        await mw(socket as any, next);
+        expect(next.mock.calls[0][0]?.message).toBe('unauthorized');
     });
 });
