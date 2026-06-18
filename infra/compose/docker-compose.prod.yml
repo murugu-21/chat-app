@@ -28,6 +28,9 @@ services:
       SENTRY_DSN: ${SENTRY_DSN}
       COGNITO_ISSUER: ${COGNITO_ISSUER}
       COGNITO_CLIENT_ID: ${COGNITO_CLIENT_ID}
+      ACTIVITY_FILE: /state/last-activity
+    volumes:
+      - ./state:/state
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health || exit 1"]
       interval: 10s
