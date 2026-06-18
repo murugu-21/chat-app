@@ -27,8 +27,8 @@ export function UserAvatar({
     const initials = email.slice(0, 2).toUpperCase();
 
     return (
-        <span className={cn('relative inline-block', className)}>
-            <Avatar className="h-9 w-9">
+        <span className="relative inline-block">
+            <Avatar className={cn('h-9 w-9', className)}>
                 {imageSrc ? <AvatarImage src={imageSrc} alt={email} /> : null}
                 <AvatarFallback>{initials}</AvatarFallback>
             </Avatar>
