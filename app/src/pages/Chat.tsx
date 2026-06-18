@@ -21,9 +21,15 @@ export default function Chat(): JSX.Element {
     const name = (chats ?? []).find((c) => c.chatId === chatId)?.chatName ?? 'Conversation';
 
     useEffect(() => {
-        socket.emit('join', chatId);
+        const join = () => socket.emit('join', chatId);
+        join(); // join now if already connected…
+        socket.on('connect', join); // …and re-join after any reconnect
         socket.on('message', () => { mutate(); });
-        return () => { socket.emit('leave', chatId); socket.off('message'); };
+        return () => {
+            socket.emit('leave', chatId);
+            socket.off('connect', join);
+            socket.off('message');
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [chatId]);
 
