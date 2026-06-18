@@ -29,6 +29,11 @@ services:
       COGNITO_ISSUER: ${COGNITO_ISSUER}
       COGNITO_CLIENT_ID: ${COGNITO_CLIENT_ID}
       ACTIVITY_FILE: /state/last-activity
+      # Winston writes file logs under LOG_DIR. The container runs as non-root
+      # `node`, which can't create the image default (/var/log/chat-app), so point
+      # it at a writable, ephemeral path — Sentry + stdout carry real observability;
+      # on-box file logs are throwaway on this disposable box.
+      LOG_DIR: /tmp/chat-app
     volumes:
       - ./state:/state
     healthcheck:
