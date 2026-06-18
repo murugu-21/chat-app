@@ -12,8 +12,12 @@ const getUserByEmail = async ({
 const searchUsers = async (
     query: string,
 ): Promise<Array<Pick<UserT, '_id' | 'email'>>> => {
+    // Case-insensitive substring match; escape regex metacharacters so a
+    // literal '.' in an email matches a '.' (not "any char") and the query
+    // can't inject a pattern.
+    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const users = await userModel
-        .find({ email: { $regex: '^' + query } }, { _id: 1, email: 1 })
+        .find({ email: { $regex: escaped, $options: 'i' } }, { _id: 1, email: 1 })
         .lean();
     return users;
 };
