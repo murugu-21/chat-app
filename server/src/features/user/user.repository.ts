@@ -40,4 +40,14 @@ const getOrCreateUserByEmail = async ({
     return user as UserT;
 };
 
-export { getUserByEmail, searchUsers, getOrCreateUserByEmail };
+const getUsersByEmails = async (
+    emails: string[],
+): Promise<Array<Pick<UserT, 'email' | 'avatarUrl'>>> => {
+    if (emails.length === 0) return [];
+    const users = await userModel
+        .find({ email: { $in: emails } }, { _id: 0, email: 1, avatarUrl: 1 })
+        .lean();
+    return users as Array<Pick<UserT, 'email' | 'avatarUrl'>>;
+};
+
+export { getUserByEmail, searchUsers, getOrCreateUserByEmail, getUsersByEmails };

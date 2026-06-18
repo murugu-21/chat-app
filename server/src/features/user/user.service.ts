@@ -33,4 +33,6 @@ const getOrCreateUserByEmail = async ({
     return userDb.getOrCreateUserByEmail({ email, avatarUrl });
 };
 
-export { getUserByEmail, searchUsers, getOrCreateUserByEmail };
+const getUsersByEmails = async (emails: string[]) => userDb.getUsersByEmails(emails);
+
+export { getUserByEmail, searchUsers, getOrCreateUserByEmail, getUsersByEmails };

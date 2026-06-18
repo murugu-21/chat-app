@@ -7,8 +7,8 @@ const createChat = async (data: ChatDataT): Promise<ChatT> => {
 };
 
 const listChatsOfUser = async (userId: string): Promise<Array<ChatT>> => {
-    const chats = await chatModel.find({ userId });
-    return chats;
+    const chats = await chatModel.find({ userId }).lean();
+    return chats as Array<ChatT>;
 };
 
 const getChatForUser = async ({
