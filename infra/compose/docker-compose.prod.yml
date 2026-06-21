@@ -6,6 +6,7 @@
 #   COGNITO_ISSUER     https://cognito-idp.us-east-1.amazonaws.com/<poolId>
 #   COGNITO_CLIENT_ID  chat-app Cognito app client id
 #   TUNNEL_TOKEN       Cloudflare Tunnel token
+#   REDIS_URL          Managed Redis (Redis Cloud) connection URL — optional
 #
 # MongoDB is external (Atlas). There is NO on-box database here. Secrets are
 # materialized into .env on the box from SSM in SP4.
@@ -34,6 +35,9 @@ services:
       # it at a writable, ephemeral path — Sentry + stdout carry real observability;
       # on-box file logs are throwaway on this disposable box.
       LOG_DIR: /tmp/chat-app
+      # Managed Redis (Redis Cloud). Optional — empty when the SSM param is unset,
+      # which the server coerces to "no Redis" (in-memory fallback).
+      REDIS_URL: ${REDIS_URL}
     volumes:
       - ./state:/state
     healthcheck:

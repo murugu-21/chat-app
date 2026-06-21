@@ -74,6 +74,12 @@ put /chat-app/cognito-client-id '5c32fqvmu4fmta044ut5udm6j1'
 put /chat-app/tunnel-token     '<cloudflare-tunnel-token>'   # from Step 6
 ```
 
+To enable managed Redis (optional — in-memory fallback when absent):
+
+```bash
+put /chat-app/redis-url        'rediss://<user>:<pw>@<host>:<port>'   # Redis Cloud (ap-south-1)
+```
+
 Notes:
 - `client-url` is the SPA origin — used by the server for CORS.
 - `sentry-dsn` may be an empty string `''` if you are not using Sentry.
@@ -81,6 +87,8 @@ Notes:
   the tunnel; you can deploy the CDK stack before setting it (the box will fail
   to start cloudflared, but the SSM params can be updated and the instance
   restarted at any time).
+- `/chat-app/redis-url` (SecureString) — Redis Cloud (ap-south-1) connection URL;
+  optional — unset falls back to in-memory presence.
 
 ---
 
