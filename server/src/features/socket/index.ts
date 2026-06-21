@@ -7,10 +7,15 @@ import { makeSocketAuth } from './auth.js';
 import { verifyToken } from '../../lib/auth/index.js';
 import * as userService from '../user/user.service.js';
 import { presence } from '../presence/index.js';
+import { redisClient, makeSocketRedisAdapter } from '../../lib/redis/index.js';
 
 const io = new Server({
     cors: { origin: corsList, methods: ['GET', 'POST'] },
 });
+
+if (redisClient) {
+    io.adapter(makeSocketRedisAdapter(redisClient));
+}
 
 io.use(
     makeSocketAuth({

@@ -1,10 +1,13 @@
+import type { Redis } from 'ioredis';
+
+import { redisClient } from '../../lib/redis/index.js';
 import { makeMemoryPresence } from './presence.memory.js';
+import { makeRedisPresence } from './presence.redis.js';
 import type { Presence } from './types.js';
 
-// Selects the presence implementation. Task 3 adds the Redis branch; for now
-// the in-memory implementation is always used.
-export const selectPresence = (_client: unknown | null): Presence => {
-    return makeMemoryPresence();
+// Redis when a client exists, otherwise in-memory.
+export const selectPresence = (client: Redis | null): Presence => {
+    return client ? makeRedisPresence(client) : makeMemoryPresence();
 };
 
-export const presence: Presence = selectPresence(null);
+export const presence: Presence = selectPresence(redisClient);
