@@ -1,4 +1,4 @@
-import type { CognitoConfig } from './pkce';
+import { generateVerifier, challengeFor, authorizeUrl, type CognitoConfig } from './pkce';
 import { COGNITO_DOMAIN, COGNITO_CLIENT_ID, REDIRECT_URI } from '../env';
 
 const TOKEN_KEY = 'token'; // the Cognito ID token (Bearer for API + socket)
@@ -11,6 +11,17 @@ export const cognitoConfig = (): CognitoConfig => ({
     clientId: COGNITO_CLIENT_ID,
     redirectUri: REDIRECT_URI,
 });
+
+// Begin the Cognito PKCE redirect: stash verifier + state, then navigate to the
+// hosted-UI authorize URL. Shared by the Login page and the landing CTA.
+export const startSignIn = async (): Promise<void> => {
+    const verifier = generateVerifier();
+    const challenge = await challengeFor(verifier);
+    const state = generateVerifier(); // reuse as random state
+    sessionStorage.setItem('chat.pkceVerifier', verifier);
+    sessionStorage.setItem('chat.oauthState', state);
+    window.location.href = authorizeUrl(cognitoConfig(), challenge, state);
+};
 
 export const getToken = (): string | null => localStorage.getItem(TOKEN_KEY);
 export const getRefreshToken = (): string | null => localStorage.getItem(REFRESH_KEY);
