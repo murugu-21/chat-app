@@ -6,11 +6,16 @@ import * as chatService from '../chat/chat.service.js';
 import { makeSocketAuth } from './auth.js';
 import { verifyToken } from '../../lib/auth/index.js';
 import * as userService from '../user/user.service.js';
-import { addConnection, removeConnection, onlineEmails } from '../presence/presence.js';
+import { presence } from '../presence/index.js';
+import { redisClient, makeSocketRedisAdapter } from '../../lib/redis/index.js';
 
 const io = new Server({
     cors: { origin: corsList, methods: ['GET', 'POST'] },
 });
+
+if (redisClient) {
+    io.adapter(makeSocketRedisAdapter(redisClient));
+}
 
 io.use(
     makeSocketAuth({
@@ -19,17 +24,17 @@ io.use(
     }),
 );
 
-io.on('connection', (socket) => {
+io.on('connection', async (socket) => {
     stampActivity();
     const email = (socket.request as any).user?.email as string | undefined;
     if (email) {
-        const wentOnline = addConnection(email);
-        socket.emit('presence:state', onlineEmails());
+        const wentOnline = await presence.addConnection(email);
+        socket.emit('presence:state', await presence.onlineEmails());
         if (wentOnline) socket.broadcast.emit('presence:update', { email, online: true });
     }
 
-    socket.on('disconnect', () => {
-        if (email && removeConnection(email)) {
+    socket.on('disconnect', async () => {
+        if (email && (await presence.removeConnection(email))) {
             io.emit('presence:update', { email, online: false });
         }
     });

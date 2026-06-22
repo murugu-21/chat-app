@@ -20,6 +20,7 @@ import globalErrorHandler from './errorHandler/globalErrorHandler.js';
 import zodErrorHandler from './errorHandler/zodErrorHandler.js';
 import { corsList } from './constants.js';
 import { io } from './features/socket/index.js';
+import { presence } from './features/presence/index.js';
 
 const app: Express = express();
 
@@ -60,6 +61,11 @@ app.use(globalErrorHandler);
 
 const server = http.createServer(app);
 io.attach(server);
+
+// Clear presence at boot: the single instance has just started and holds no
+// connections yet, so any pre-existing entries (e.g. left by a box that
+// scaled-to-zero without clean disconnects) are stale.
+await presence.reset();
 
 server.listen(env.PORT, () => {
     // Stamp a baseline activity time at boot. Without this, a freshly-woken box

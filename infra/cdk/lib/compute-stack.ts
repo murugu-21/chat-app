@@ -100,6 +100,7 @@ export class ComputeStack extends cdk.Stack {
       // Materialize .env from SSM SecureString params (region from the stack)
       `REGION=${this.region}`,
       "get() { aws ssm get-parameter --region \"$REGION\" --name \"$1\" --with-decryption --query Parameter.Value --output text; }",
+      "opt() { aws ssm get-parameter --region \"$REGION\" --name \"$1\" --with-decryption --query Parameter.Value --output text 2>/dev/null || true; }",
       // Disable xtrace around secret materialization — with set -x, the trace
       // would print the expanded $(get ...) (the actual secret values) into
       // the userdata log. Re-enable after .env is written.
@@ -112,6 +113,7 @@ export class ComputeStack extends cdk.Stack {
       '  echo "COGNITO_ISSUER=$(get /chat-app/cognito-issuer)"',
       '  echo "COGNITO_CLIENT_ID=$(get /chat-app/cognito-client-id)"',
       '  echo "TUNNEL_TOKEN=$(get /chat-app/tunnel-token)"',
+      '  echo "REDIS_URL=$(opt /chat-app/redis-url)"',
       "} > .env",
       "chmod 600 .env",
       "set -x",

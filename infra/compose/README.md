@@ -26,3 +26,7 @@ docker compose -f docker-compose.prod.yml down
 `ADMIN_API_KEY`, `DATABASE_URL`, `CLIENT_URL`, `SENTRY_DSN`, `COGNITO_ISSUER`,
 `COGNITO_CLIENT_ID`, `TUNNEL_TOKEN`. (`NODE_ENV`, `PORT`, `AUTH_MODE` are pinned
 in the compose file.)
+
+`REDIS_URL` is **optional** — materialized from SSM `/chat-app/redis-url` at boot
+(via the `opt()` helper, which tolerates a missing param). When absent or empty, the
+server falls back to in-memory presence/pub-sub.

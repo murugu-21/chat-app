@@ -1,4 +1,4 @@
-import { describe, it } from "vitest";
+import { describe, it, expect } from "vitest";
 import * as cdk from "aws-cdk-lib";
 import { Template, Match } from "aws-cdk-lib/assertions";
 import { ComputeStack } from "../lib/compute-stack";
@@ -83,5 +83,13 @@ describe("ComputeStack", () => {
         ]),
       }),
     });
+  });
+  it("userdata reads the optional Redis URL from SSM", () => {
+    const t = template();
+    const lts = t.findResources("AWS::EC2::LaunchTemplate");
+    const userData = JSON.stringify(
+      Object.values(lts)[0].Properties.LaunchTemplateData.UserData,
+    );
+    expect(userData).toContain("/chat-app/redis-url");
   });
 });

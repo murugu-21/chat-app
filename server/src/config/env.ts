@@ -12,6 +12,13 @@ const env = createEnv({
         AUTH_MODE: z.enum(['dev', 'cognito']),
         COGNITO_ISSUER: z.string().url().optional(),
         COGNITO_CLIENT_ID: z.string().optional(),
+        // Managed Redis (Redis Cloud) connection URL. Optional: when unset the
+        // app uses in-memory presence + the default socket adapter. docker-compose
+        // substitutes "" for an unset var, so coerce empty -> undefined.
+        REDIS_URL: z.preprocess(
+            (v) => (v === '' ? undefined : v),
+            z.string().url().optional(),
+        ),
         // Directory for winston file logs. Defaults to /var/log/chat-app (the
         // container path); override to a writable dir for local dev.
         LOG_DIR: z.string().default('/var/log/chat-app'),
