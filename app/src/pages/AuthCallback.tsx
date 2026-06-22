@@ -27,7 +27,7 @@ export default function AuthCallback(): JSX.Element {
             try {
                 const tokens = await exchangeCode(cognitoConfig(), code, verifier);
                 storeTokens(tokens.id_token, tokens.refresh_token, emailFromIdToken(tokens.id_token), pictureFromIdToken(tokens.id_token));
-                navigate('/', { replace: true });
+                navigate('/chat', { replace: true });
             } catch {
                 setError('Sign-in failed. Please try again.');
             }

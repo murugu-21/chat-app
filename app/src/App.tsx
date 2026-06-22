@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from 'react-router';
 import LoginPage from './pages/Login';
 import AuthCallback from './pages/AuthCallback';
 import Chat from './pages/Chat';
+import Landing from './pages/Landing';
 import { Toaster } from 'sonner';
 import ProtectedRoute from './Provider/ProtectedRoute';
 import NotFound from './pages/utils/NotFound';
@@ -21,12 +22,13 @@ function App() {
                 <Routes>
                     {online ? (
                         <>
+                            <Route path="/" element={<Landing />} />
                             <Route path="/login" element={<LoginPage />} />
                             <Route path="/auth/callback" element={<AuthCallback />} />
-                            <Route element={<ApiHealthGate><ProtectedRoute /></ApiHealthGate>}>
+                            <Route path="/chat" element={<ApiHealthGate><ProtectedRoute /></ApiHealthGate>}>
                                 <Route element={<ChatLayout />}>
                                     <Route index element={<EmptyState />} />
-                                    <Route path="chat/:chatId" element={<Chat />} />
+                                    <Route path=":chatId" element={<Chat />} />
                                 </Route>
                             </Route>
 
